@@ -44,8 +44,32 @@ def get_node(root, key):
         return get_node(root["right"],key)
     
 def remove(my_bst, key):
+    my_bst["root"] = remove_node(my_bst["root"], key)
+    return my_bst
     
 def remove_node(root, key):
+    if root is None:
+        return None
+    root_key = node.get_key(root)
+    
+    if key < root_key:
+        root["left"] = remove_node(root["left"],key)
+    elif key > root_key:
+        root["right"] = remove_node(root["right"],key)
+    else:
+        if root["left"] is None:
+            return root["right"]
+        if root["right"] is None:
+            return root["left"]
+
+        temporal = root
+        min_node = get_min_node(temporal["right"])
+        root = min_node
+        root["right"] = delete_min_tree(temporal["right"])
+        root["left"] = temporal["left"]
+        
+    root["size"] = 1 + size_tree(root["left"]) + size_tree(root["right"])
+    return root
     
 def contains(my_bst, key):
     return get(my_bst,key) is not None
@@ -64,12 +88,30 @@ def is_empty(my_bst):
     return size(my_bst) == 0
     
 def key_set(my_bst):
+    result = lt.new_list()
+    key_set_tree(my_bst["root"],result)
+    return result
     
-def key_set_tree():
+def key_set_tree(root,list_keys):
+    if root is None:
+        return
+    
+    key_set_tree(root["left"],list_keys)
+    lt.add_last(list_keys,node.get_key(root))
+    key_set_tree(root["right"],list_keys)
     
 def value_set(my_bst):
+    result = lt.new_list()
+    value_set_tree(my_bst["root"],result)
+    return result
     
-def value_set_tree():
+def value_set_tree(root,list_values):
+    if root is None:
+        return
+    
+    value_set_tree(root["left"],list_values)
+    lt.add_last(list_values,node.get_value(root))
+    value_set_tree(root["right"],list_values)
     
 def get_min(my_bst):
     if my_bst is None or my_bst["root"] is None:
