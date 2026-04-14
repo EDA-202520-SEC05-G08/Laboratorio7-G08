@@ -31,11 +31,11 @@ import datetime
 # TODO Realice la importación del Árbol Binario Ordenado
 # TODO Realice la importación de ArrayList (al) como estructura de datos auxiliar para sus requerimientos
 # TODO Realice la importación de LinearProbing (lp) como estructura de datos auxiliar para sus requerimientos
-
+from DataStructures.Tree import binary_search_tree as bst
+from DataStructures.List import array_list as al
+from DataStructures.Map import map_linear_probing as lp
 
 data_dir = os.path.dirname(os.path.realpath('__file__')) + '/Data/'
-
-
 
 def new_logic():
     """ Inicializa el analizador
@@ -114,15 +114,17 @@ def add_date_index(datentry, crime):
     lst = datentry['lstcrimes']
     al.add_last(lst, crime)
     offenseIndex = datentry['offenseIndex']
-    offentry = lp.get(offenseIndex, crime['OFFENSE_CODE_GROUP'])
+    key = crime["OFFENSE_CODE_GROUP"]
+    offentry = lp.get(offenseIndex, key)
     if (offentry is None):
         # TODO Realice el caso en el que no se encuentre el tipo de crimen
-        pass
+        new_list = al.new_list()
+        al.add_last(new_list, crime)
+        lp.put(offenseIndex, key, new_list)
     else:
         # TODO Realice el caso en el que se encuentre el tipo de crimen
-        pass
+        al.add_last(offentry, crime)
     return datentry
-
 
 def new_data_entry(crime):
     """
@@ -164,7 +166,7 @@ def index_height(analyzer):
     Altura del arbol
     """
     # TODO Completar la función de consulta de altura del árbol
-    pass
+    return bst.height(analyzer["index"])
 
 
 def index_size(analyzer):
@@ -172,7 +174,7 @@ def index_size(analyzer):
     Numero de elementos en el indice
     """
     # TODO Completar la función de consulta de tamaño del árbol
-    pass
+    return bst.size(analyzer["index"])
 
 
 def min_key(analyzer):
@@ -180,7 +182,7 @@ def min_key(analyzer):
     Llave mas pequena
     """
     # TODO Completar la función de consulta de la llave mínima
-    pass
+    return bst.get_min(analyzer["index"])
 
 
 def max_key(analyzer):
@@ -188,7 +190,7 @@ def max_key(analyzer):
     Llave mas grande
     """
     # TODO Completar la función de consulta de la llave máxima
-    pass
+    return bst.get_max(analyzer["index"])
 
 
 def get_crimes_by_range(analyzer, initialDate, finalDate):
@@ -196,7 +198,19 @@ def get_crimes_by_range(analyzer, initialDate, finalDate):
     Retorna el numero de crimenes en un rago de fechas.
     """
     # TODO Completar la función de consulta de crimenes por rango de fechas
-    pass
+    keys = bst.keys(analyzer["index"], initialDate, finalDate)
+
+    total_crimes = 0
+    size_keys = al.size(keys)
+
+    for i in range(size_keys):
+        date = al.get_element(keys, i)
+        crimes_list = bst.get(analyzer["index"], date)
+
+        if crimes_list is not None:
+            total_crimes += al.size(crimes_list["lstcrimes"])
+
+    return total_crimes
 
 
 def get_crimes_by_range_code(analyzer, initialDate, offensecode):
@@ -205,4 +219,15 @@ def get_crimes_by_range_code(analyzer, initialDate, offensecode):
     de un tipo especifico.
     """
     # TODO Completar la función de consulta de crimenes por tipo de crimen en una fecha
-    pass
+    datentry = bst.get(analyzer["index"], initialDate)
+
+    if datentry is None:
+        return 0
+
+    offenseIndex = datentry["offenseIndex"]
+    lista = lp.get(offenseIndex, offensecode)
+
+    if lista is None:
+        return 0
+
+    return al.size(lista)
